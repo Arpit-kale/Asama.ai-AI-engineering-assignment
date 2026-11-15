@@ -1,0 +1,53 @@
+# docker compose up -d --build                    -> platform on :8000
+# docker compose --profile demo up -d --build     -> + 5 demo company agents on :9000
+# docker compose --profile tls up -d              -> + Caddy with automatic HTTPS for $DOMAIN
+services:
+  platform:
+    build: .
+    image: agent-network:latest
+    env_file: .env
+    environment:
+      AN_DB_PATH: /data/agent_network.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - platform-data:/data
+    restart: unless-stopped
+
+  agents:
+    image: agent-network:latest
+    profiles: ["demo"]
+    command: ["python", "-m", "agents_sim"]
+    env_file: .env
+    environment:
+      PORT: "9000"
+      PLATFORM_URL: http://platform:8000
+      SIM_URL: http://agents:9000
+    ports:
+      - "9000:9000"
+    depends_on:
+      platform:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/health', timeout=4)"]
+      interval: 30s
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    profiles: ["tls"]
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+    depends_on:
+      - platform
+    restart: unless-stopped
+
+volumes:
+  platform-data:
+  caddy-data:

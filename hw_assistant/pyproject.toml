@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hwqa"
+dynamic = ["version"]
+description = "Local natural-language hardware Q&A assistant for Linux (safe, allow-listed tool calling)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []            # standard library only
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Hardware",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
+[project.scripts]
+hwqa = "hwqa.cli:main"
+
+[tool.setuptools]
+packages = ["hwqa"]
+
+[tool.setuptools.dynamic]
+version = { attr = "hwqa.__version__" }

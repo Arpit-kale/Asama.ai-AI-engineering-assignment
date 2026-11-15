@@ -1,0 +1,5 @@
+# Automatic HTTPS (Let's Encrypt) in front of the platform.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy platform:8000
+}

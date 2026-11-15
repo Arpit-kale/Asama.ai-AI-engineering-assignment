@@ -1,0 +1,41 @@
+# Render Blueprint: New > Blueprint > pick this repo (set rootDir if the repo holds both projects).
+services:
+  - type: web
+    name: agent-network
+    runtime: docker
+    rootDir: agent_network
+    plan: starter            # persistent disks need a paid plan
+    healthCheckPath: /ready
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: AN_ENV
+        value: production
+      - key: AN_ADMIN_KEY
+        generateValue: true
+      - key: AN_PUBLIC_BASE_URL
+        sync: false          # e.g. https://agent-network.onrender.com
+      - key: AN_REGISTRATION_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  # Optional: the 5 demo company agents, reachable over public HTTPS.
+  - type: web
+    name: agent-network-demo-agents
+    runtime: docker
+    rootDir: agent_network
+    plan: starter
+    dockerCommand: python -m agents_sim
+    healthCheckPath: /health
+    envVars:
+      - key: PLATFORM_URL
+        sync: false          # https://agent-network.onrender.com
+      - key: SIM_URL
+        sync: false          # https://agent-network-demo-agents.onrender.com
+      - key: SIM_CONTROL_KEY
+        generateValue: true
+      - key: AN_REGISTRATION_KEY
+        sync: false          # same value as the platform's, if set
